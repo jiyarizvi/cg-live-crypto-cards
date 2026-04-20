@@ -1,19 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
     const wrapper = document.getElementById("cg-live-cards-wrapper");
     const container = document.getElementById("cg-live-cards");
+    if (!wrapper || !container || !window.cgLiveCards) return;
+
     const s = cgLiveCards.settings;
 
-    // Layout classes
-    if (wrapper) {
-        wrapper.classList.add(`cg-layout-${s.layout}`);
-    }
+    // Layout class
+    wrapper.classList.add(`cg-layout-${s.layout}`);
 
     // Dark mode
     function applyDarkMode() {
-        if (!wrapper) return;
         const mode = wrapper.dataset.darkMode || s.dark_mode;
-
         wrapper.classList.remove("cg-dark");
+
         if (mode === "dark") {
             wrapper.classList.add("cg-dark");
         } else if (mode === "auto") {
@@ -28,19 +27,20 @@ document.addEventListener("DOMContentLoaded", () => {
         window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyDarkMode);
     }
 
-    // Inject CSS variables for colors
-    if (wrapper) {
+    // Inject CSS variables
+    function applyColors() {
         wrapper.style.setProperty("--cg-card-bg", s.card_bg_light);
         wrapper.style.setProperty("--cg-card-border", s.card_border);
         wrapper.style.setProperty("--cg-text", s.text_light);
         wrapper.style.setProperty("--cg-up", s.color_up);
         wrapper.style.setProperty("--cg-down", s.color_down);
-    }
 
-    if (wrapper && wrapper.classList.contains("cg-dark")) {
-        wrapper.style.setProperty("--cg-card-bg", s.card_bg_dark);
-        wrapper.style.setProperty("--cg-text", s.text_dark);
+        if (wrapper.classList.contains("cg-dark")) {
+            wrapper.style.setProperty("--cg-card-bg", s.card_bg_dark);
+            wrapper.style.setProperty("--cg-text", s.text_dark);
+        }
     }
+    applyColors();
 
     // Load coins
     (s.coins || []).forEach(coin => loadCoin(coin));
@@ -56,37 +56,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderCard(coin, data) {
-        const m = data.market[0];
+        // PHP renders markup via templates; here we only build charts
+        // So we just append a placeholder and then fill chart wrappers
+        const market = data.market[0];
         const prices = (data.chart && data.chart.prices || []).map(p => p[1]);
         if (!prices.length) return;
 
-        const isUp = m.price_change_percentage_24h >= 0;
-        const stroke = isUp ? s.color_up : s.color_down;
-
-        const svg = buildSmoothedSparkline(prices, stroke);
+        // Build a temporary container using the same structure as card-item.php
+        const isUp = market.price_change_percentage_24h >= 0;
+        const change = market.price_change_percentage_24h.toFixed(2);
+        const price  = market.current_price.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
         const card = document.createElement("div");
         card.className = "cg-card";
-
         card.innerHTML = `
             <div class="cg-left">
                 <div class="cg-card-header">
-                    <img src="${m.image}" alt="${m.symbol.toUpperCase()}">
-                    <div class="cg-card-title">${m.name} (${m.symbol.toUpperCase()})</div>
+                    <img src="${market.image}" alt="${market.symbol.toUpperCase()}">
+                    <div class="cg-card-title">${market.name} (${market.symbol.toUpperCase()})</div>
                 </div>
-                <div class="cg-price">$${m.current_price.toLocaleString()}</div>
+                <div class="cg-price">$${price}</div>
                 <div class="cg-change ${isUp ? "cg-up" : "cg-down"}">
-                    ${m.price_change_percentage_24h.toFixed(2)}%
+                    ${isUp ? "+" : ""}${change}%
                 </div>
             </div>
-            <div class="cg-chart-wrapper">${svg}</div>
+            <div class="cg-chart-wrapper"
+                 data-prices='${JSON.stringify(prices)}'
+                 data-is-up="${isUp ? "1" : "0"}">
+            </div>
         `;
-
         container.appendChild(card);
+
+        const chartWrapper = card.querySelector(".cg-chart-wrapper");
+        buildSmoothedSparkline(chartWrapper, prices, isUp ? s.color_up : s.color_down);
     }
 
     // Smoothed sparkline using quadratic curves
-    function buildSmoothedSparkline(prices, stroke) {
+    function buildSmoothedSparkline(wrapperEl, prices, stroke) {
+        if (!wrapperEl || !prices.length) return;
+
         const width = 100, height = 40;
         const min = Math.min(...prices);
         const max = Math.max(...prices);
@@ -99,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return { x, y };
         });
 
-        if (points.length < 2) return "";
+        if (points.length < 2) return;
 
         let d = `M ${points[0].x},${points[0].y}`;
         for (let i = 1; i < points.length; i++) {
@@ -112,12 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const last = points[points.length - 1];
         const first = points[0];
-
         const areaPath = `${d} L ${last.x},${height} L ${first.x},${height} Z`;
-
         const gradId = `grad-${stroke.replace('#','')}-${Math.floor(Math.random()*100000)}`;
 
-        return `
+        const svg = `
         <svg viewBox="0 0 ${width} ${height}" class="cg-chart" preserveAspectRatio="none">
             <defs>
                 <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
@@ -140,5 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 opacity="0.9"
             />
         </svg>`;
+
+        wrapperEl.innerHTML = svg;
     }
 });
