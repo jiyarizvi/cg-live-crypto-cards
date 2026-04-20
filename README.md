@@ -73,11 +73,29 @@ css
 
 ```
 cg-live-crypto-cards/
-│── assets/
-│── includes/
-│── templates/
-│── cg-live-crypto-cards.php
-│── README.md
+│
+├── cg-live-crypto-cards.php
+│
+├── includes/
+│   ├── api.php
+│   ├── cache.php
+│   ├── shortcode.php
+│   ├── renderer.php
+│   ├── helpers.php
+│
+├── templates/
+│   ├── card-grid.php
+│   ├── card-list.php
+│   ├── card-ticker.php
+│   ├── card-item.php
+│
+├── admin/
+│   └── settings-page.php
+│
+└── assets/
+    ├── style.css
+    └── script.js
+
 ```
 
 ## 🤝 Contributing
@@ -87,3 +105,5 @@ For major changes, please open an issue first to discuss what you’d like to im
 
 ## 📄 License
 This project is licensed under the MIT License — feel free to use and modify it.
+
+
