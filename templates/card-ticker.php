@@ -1,0 +1,10 @@
+<?php
+if (!defined('ABSPATH')) exit;
+?>
+<div class="cg-ticker">
+    <div class="cg-ticker-inner">
+        <?php foreach ($coins as $coin_id => $data): ?>
+            <?php cg_live_crypto_cards_render_card_item($coin_id, $data); ?>
+        <?php endforeach; ?>
+    </div>
+</div>
