@@ -27,10 +27,23 @@
 }
 
 #cg-live-cards-wrapper.cg-layout-ticker #cg-live-cards {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
+  display: block;
+}
+
+.cg-ticker {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cg-ticker-inner {
+  display: inline-flex;
   gap: 12px;
+  animation: cg-ticker-scroll 40s linear infinite;
+}
+
+@keyframes cg-ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 /* Cards */
