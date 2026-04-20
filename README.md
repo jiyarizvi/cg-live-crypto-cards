@@ -3,6 +3,15 @@
 A lightweight, fast, and customizable WordPress plugin that displays live cryptocurrency price cards on any page or post using a simple shortcode.
 Perfect for crypto blogs, news sites, and dashboards that need real‑time market data.
 
+## 📋 Table of Contents
+- [Features](#-features)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Data Source](#-data-source)
+- [Customization](#-customization)
+- [Contributing](#-contributing)
+- [License](#-license)
+
 ## 🚀 Features
 
 Live price updates powered by a crypto API
@@ -49,15 +58,7 @@ Example with options:
 ```
 ## 📡 Data Source
 
-The plugin fetches live market data from a trusted cryptocurrency API such as:
-
-CoinGecko
-
-CoinMarketCap
-
-CryptoCompare
-
-(Your implementation may vary — update this section based on your actual API.)
+The plugin fetches live crypto market data from CoinGecko API. 
 
 ## 🎨 Customization
 
